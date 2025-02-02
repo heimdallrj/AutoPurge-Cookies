@@ -3,7 +3,7 @@
   padding: 15px;
 }
 
-.input-group {
+.whitelist-input {
   display: flex;
   gap: 10px;
   margin-bottom: 15px;
@@ -32,9 +32,8 @@ li {
 }
 
 .remove-domain {
-  background-color: #ff4444;
-  color: white;
-  border: none;
-  border-radius: 3px;
-  padding: 3px 8px;
-} 
+  color: red;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 3px;
+}

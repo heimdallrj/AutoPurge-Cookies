@@ -12,14 +12,14 @@
     "scripts": ["background.js"]
   },
   "browser_action": {
-    "default_popup": "popup/popup.html",
+    "default_popup": "screens/popup.html",
     "default_icon": {
-      "48": "icons/icon-48.jpg",
-      "96": "icons/icon-96.jpg"
+      "48": "assets/icon-48.png",
+      "96": "assets/icon-96.png"
     }
   },
   "icons": {
-    "48": "icons/icon-48.jpg",
-    "96": "icons/icon-96.jpg"
+    "48": "assets/icon-48.png",
+    "96": "assets/icon-96.png"
   }
 } 

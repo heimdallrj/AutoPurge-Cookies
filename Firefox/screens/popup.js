@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const li = document.createElement('li');
         li.innerHTML = `
           ${domain}
-          <span class="remove" data-domain="${domain}">✕</span>
+          <span class="remove-domain" data-domain="${domain}">✕</span>
         `;
         whitelistElement.appendChild(li);
       });
@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Remove domain from whitelist
   whitelistElement.addEventListener('click', (e) => {
-    if (e.target.classList.contains('remove')) {
+    if (e.target.classList.contains('remove-domain')) {
       const domain = e.target.dataset.domain;
       browser.storage.local.get('whitelist').then(result => {
         const whitelist = result.whitelist || [];

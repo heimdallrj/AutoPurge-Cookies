@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const li = document.createElement('li');
         li.innerHTML = `
           <span>${domain}</span>
-          <button class="remove-domain" data-domain="${domain}">Remove</button>
+          <span class="remove-domain" data-domain="${domain}">x</span>
         `;
         whitelistElement.appendChild(li);
       });

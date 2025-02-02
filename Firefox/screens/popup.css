@@ -4,21 +4,19 @@
 }
 
 .whitelist-input {
-  margin: 10px 0;
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
 }
 
 input {
-  width: 200px;
+  flex: 1;
   padding: 5px;
-  margin-right: 5px;
 }
 
 button {
   padding: 5px 10px;
-}
-
-.whitelist-container {
-  margin-top: 15px;
+  cursor: pointer;
 }
 
 ul {
@@ -33,7 +31,9 @@ li {
   padding: 5px 0;
 }
 
-.remove {
+.remove-domain {
   color: red;
   cursor: pointer;
+  font-size: 14px;
+  padding: 3px;
 } 
