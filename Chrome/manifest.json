@@ -3,26 +3,26 @@
   "name": "AutoPurge-Cookies",
   "version": "1.0.0",
   "description": "AutoPurge Cookies — Purges cookies except for whitelisted domains when closing the window",
-  "permissions": [
-    "cookies",
-    "storage",
-    "tabs"
-  ],
-  "host_permissions": [
-    "<all_urls>"
-  ],
+  "permissions": ["cookies", "storage", "tabs"],
+  "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background.js"
   },
   "action": {
     "default_popup": "screens/popup.html",
     "default_icon": {
-      "48": "assets/icon-48.png",
-      "96": "assets/icon-96.png"
+      "16": "assets/icon16.png",
+      "32": "assets/icon32.png",
+      "48": "assets/icon48.png",
+      "96": "assets/icon96.png",
+      "128": "assets/icon128.png"
     }
   },
   "icons": {
-    "48": "assets/icon-48.png",
-    "96": "assets/icon-96.png"
+    "16": "assets/icon16.png",
+    "32": "assets/icon32.png",
+    "48": "assets/icon48.png",
+    "96": "assets/icon96.png",
+    "128": "assets/icon128.png"
   }
-} 
+}
