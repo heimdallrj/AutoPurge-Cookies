@@ -1,0 +1,40 @@
+.container {
+  width: 300px;
+  padding: 15px;
+}
+
+.input-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+input {
+  flex: 1;
+  padding: 5px;
+}
+
+button {
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+}
+
+.remove-domain {
+  background-color: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 3px 8px;
+} 
