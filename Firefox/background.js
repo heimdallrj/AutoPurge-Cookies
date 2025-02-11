@@ -29,7 +29,12 @@ function isDomainWhitelisted(domain, whitelist) {
 }
 
 // Listen for window close
-browser.windows.onRemoved.addListener(() => {
+browser.windows.onRemoved.addListener(async () => {
+  const result = await browser.storage.local.get(['autoPurgeEnabled']);
+  if (!result.autoPurgeEnabled) {
+    return;
+  }
+
   // Get all cookies
   browser.cookies.getAll({}).then((cookies) => {
     console.log('Total cookies found:', cookies.length);
