@@ -6,13 +6,20 @@ document.addEventListener('DOMContentLoaded', () => {
   );
   const whitelistElement = document.getElementById('whitelist');
   const toggleStatusElement = document.getElementById('toggle-status');
+  const inputErrorElement = document.getElementById('input-error');
 
   let autoPurgeEnabled;
 
   // Initialize
   async function init() {
+    await resetErrors();
     await updateToggleStatus();
     await loadWhitelist();
+  }
+
+  // Reset all errors
+  async function resetErrors() {
+    inputErrorElement.style.display = 'none';
   }
 
   // Update toggle status
@@ -70,7 +77,9 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const domainRegex = /^(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
         if (!domainRegex.test(domain)) {
-          alert('Invalid domain name!');
+          inputErrorElement.innerText = 'Invalid domain name!';
+          inputErrorElement.style.display = 'block';
+
           domainInputElement.value = '';
           return;
         }
@@ -126,6 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Enter') {
       addButtonElement.click();
     }
+    resetErrors();
   });
 
   // Initialize

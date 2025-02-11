@@ -11,7 +11,6 @@
 .whitelist-input {
   display: flex;
   gap: 10px;
-  margin-bottom: 15px;
 }
 
 input {
@@ -24,7 +23,16 @@ button {
   cursor: pointer;
 }
 
+#input-error {
+  display: none;
+  color: red;
+  font-size: 12px;
+  margin: 0;
+  padding: 3px 0;
+}
+
 ul {
+  margin-top: 15px;
   list-style: none;
   padding: 0 10px;
 }
