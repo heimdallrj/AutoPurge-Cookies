@@ -1,8 +1,10 @@
+const browser = chrome || browser;
+
 // Store for whitelisted domains
 let whitelist = [];
 
 // Add a storage change listener to keep whitelist updated
-chrome.storage.onChanged.addListener((changes, area) => {
+browser.storage.onChanged.addListener((changes, area) => {
   if (area === 'local' && changes.whitelist) {
     whitelist = changes.whitelist.newValue || [];
     console.log('Whitelist updated:', whitelist);
@@ -10,7 +12,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
 });
 
 // Initial load
-chrome.storage.local.get(['whitelist'], (result) => {
+browser.storage.local.get(['whitelist'], (result) => {
   whitelist = result.whitelist || [];
   console.log('Initial whitelist loaded:', whitelist);
 });
@@ -29,9 +31,14 @@ function isDomainWhitelisted(domain, whitelist) {
 }
 
 // Listen for window close
-chrome.windows.onRemoved.addListener(() => {
+browser.windows.onRemoved.addListener(async () => {
+  const result = await browser.storage.local.get(['autoPurgeEnabled']);
+  if (!result.autoPurgeEnabled) {
+    return;
+  }
+
   // Get all cookies
-  chrome.cookies.getAll({}).then((cookies) => {
+  browser.cookies.getAll({}).then((cookies) => {
     console.log('Total cookies found:', cookies.length);
 
     cookies.forEach((cookie) => {
@@ -53,7 +60,7 @@ chrome.windows.onRemoved.addListener(() => {
           path: cookie.path,
         });
 
-        chrome.cookies.remove({
+        browser.cookies.remove({
           url: `http${cookie.secure ? 's' : ''}://${cookie.domain}${
             cookie.path
           }`,
