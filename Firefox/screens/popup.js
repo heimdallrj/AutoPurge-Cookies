@@ -52,12 +52,18 @@ document.addEventListener('DOMContentLoaded', () => {
         whitelistElement.innerHTML = '';
 
         whitelist.forEach((domain) => {
-          const li = document.createElement('li');
-          li.innerHTML = `
-          <span>${domain}</span>
-          <span class="remove-domain" data-domain="${domain}">✕</span>
-        `;
-          whitelistElement.appendChild(li);
+          const listElement = document.createElement('li');
+          const domainLabelElement = document.createElement('span');
+          const removeBtnElement = document.createElement('span');
+
+          domainLabelElement.textContent = domain;
+          removeBtnElement.classList.add('remove-domain');
+          removeBtnElement.setAttribute('data-domain', domain);
+          removeBtnElement.textContent = '✕';
+
+          listElement.appendChild(domainLabelElement);
+          listElement.appendChild(removeBtnElement);
+          whitelistElement.appendChild(listElement);
         });
       });
     } catch (error) {

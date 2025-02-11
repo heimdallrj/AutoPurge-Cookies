@@ -19,10 +19,10 @@ document.addEventListener('DOMContentLoaded', () => {
     await loadWhitelist();
   }
 
-    // Reset all errors
-    async function resetErrors() {
-      inputErrorElement.style.display = 'none';
-    }
+  // Reset all errors
+  async function resetErrors() {
+    inputErrorElement.style.display = 'none';
+  }
 
   // Update toggle status
   async function updateToggleStatus() {
@@ -55,12 +55,18 @@ document.addEventListener('DOMContentLoaded', () => {
         whitelistElement.innerHTML = '';
         if (whitelist.length > 0) {
           whitelist.forEach((domain) => {
-            const li = document.createElement('li');
-            li.innerHTML = `
-            <span>${domain}</span>
-            <span class="remove-domain" data-domain="${domain}">x</span>
-          `;
-            whitelistElement.appendChild(li);
+            const listElement = document.createElement('li');
+            const domainLabelElement = document.createElement('span');
+            const removeBtnElement = document.createElement('span');
+
+            domainLabelElement.textContent = domain;
+            removeBtnElement.classList.add('remove-domain');
+            removeBtnElement.setAttribute('data-domain', domain);
+            removeBtnElement.textContent = '✕';
+
+            listElement.appendChild(domainLabelElement);
+            listElement.appendChild(removeBtnElement);
+            whitelistElement.appendChild(listElement);
           });
           whitelistElement.style.display = 'block';
         } else {

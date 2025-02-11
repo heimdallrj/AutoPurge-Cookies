@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "AutoPurge-Cookies",
-  "version": "1.0.0",
-  "description": "AutoPurge Cookies — Purges cookies except for whitelisted domains when closing the window",
+  "version": "1.0.1",
+  "description": "Automatically delete cookies from untrusted sites to protect your privacy and prevent tracking.",
   "permissions": ["cookies", "storage", "tabs"],
   "host_permissions": ["<all_urls>"],
   "background": {
