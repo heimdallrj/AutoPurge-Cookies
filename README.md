@@ -10,7 +10,11 @@
 
 ## Installation
 
-Not yet published. Install manually using the source code for both **Firefox** and **Chrome**.
+### Firefox
+
+Install AutoPurge-Cookies directly from the [Firefox Addons Gallery](https://addons.mozilla.org/en-US/firefox/addon/autopurge-cookies/).
+
+Not yet available on the Chrome Web Store. Install manually using the source code.
 
 ## How to Use
 
