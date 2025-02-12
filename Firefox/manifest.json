@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "AutoPurge-Cookies",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Automatically delete cookies from untrusted sites to protect your privacy and prevent tracking.",
   "permissions": ["cookies", "storage", "<all_urls>"],
   "background": {
