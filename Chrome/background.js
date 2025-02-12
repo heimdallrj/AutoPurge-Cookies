@@ -18,6 +18,9 @@ browser.storage.local.get(['whitelist'], (result) => {
 });
 
 function isDomainWhitelisted(domain, whitelist) {
+  // Allow FF Addons to stay logged in
+  if (['chrome-extension://'].includes(domain)) return true;
+
   // Remove leading dot if present
   const cleanDomain = domain.startsWith('.') ? domain.slice(1) : domain;
 
