@@ -1,29 +1,26 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const domainInputElement = document.getElementById('domain');
-  const addButtonElement = document.getElementById('add');
+  const toggleStatusElement = document.getElementById('status-toggle');
   const whitelistContainerElement = document.getElementById(
     'whitelist-container'
   );
+  const inputErrorElement = document.getElementById('domain-input-error');
+  const domainInputElement = document.getElementById('domain');
+  const addButtonElement = document.getElementById('add');
   const whitelistElement = document.getElementById('whitelist');
-  const toggleStatusElement = document.getElementById('toggle-status');
-  const inputErrorElement = document.getElementById('input-error');
 
   let autoPurgeEnabled;
 
-  // Initialize
   async function init() {
     await resetErrors();
-    await updateToggleStatus();
+    await toggleStatus();
     await loadWhitelist();
   }
 
-  // Reset all errors
   async function resetErrors() {
     inputErrorElement.style.display = 'none';
   }
 
-  // Update toggle status
-  async function updateToggleStatus() {
+  async function toggleStatus() {
     try {
       const result = await browser.storage.local.get(['autoPurgeEnabled']);
       autoPurgeEnabled = !!result.autoPurgeEnabled;
@@ -36,8 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         whitelistContainerElement.style.display = 'none';
       }
-    } catch (error) {
-      console.error('$updateToggleStatus():', error);
+    } catch (err) {
+      console.error('$toggleStatus()', err);
     }
   }
 
@@ -57,6 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const removeBtnElement = document.createElement('span');
 
           domainLabelElement.textContent = domain;
+          removeBtnElement.classList.add('apc__whitelist-domain-delete-icon');
           removeBtnElement.classList.add('remove-domain');
           removeBtnElement.setAttribute('data-domain', domain);
           removeBtnElement.textContent = '✕';
@@ -70,6 +68,17 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('$loadWhitelist():', error);
     }
   }
+
+  // Toggle auto purge status
+  toggleStatusElement.addEventListener('click', async () => {
+    try {
+      await browser.storage.local.set({ autoPurgeEnabled: !autoPurgeEnabled });
+      await resetErrors();
+      await toggleStatus();
+    } catch (err) {
+      console.error('$toggleStatusElement.click():', err);
+    }
+  });
 
   // Add domain to whitelist
   addButtonElement.addEventListener('click', () => {
@@ -123,16 +132,6 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (error) {
         console.error('Error removing domain:', error);
       }
-    }
-  });
-
-  // Toggle auto purge status
-  toggleStatusElement.addEventListener('click', async () => {
-    try {
-      await browser.storage.local.set({ autoPurgeEnabled: !autoPurgeEnabled });
-      await updateToggleStatus();
-    } catch (error) {
-      console.error('$toggleStatusElement.click():', error);
     }
   });
 

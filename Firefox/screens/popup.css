@@ -1,52 +1,146 @@
-.container {
-  width: 300px;
-  padding: 5px 25px 25px;
-  font-family: "Roboto", serif;
+@import url('https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css');
+
+/* -- Reset -- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-#whitelist-container {
-  display: none;
-}
-
-.whitelist-input {
-  display: flex;
-  gap: 10px;
-}
-
-input {
-  flex: 1;
-  padding: 5px;
-}
-
-button {
-  padding: 5px 10px;
-  cursor: pointer;
-}
-
-#input-error {
-  display: none;
-  color: red;
-  font-size: 12px;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   margin: 0;
-  padding: 3px 0;
+  padding: 0;
 }
 
-ul {
-  margin-top: 15px;
+p {
+  margin: 0;
+  padding: 0;
+}
+
+ul,
+ol {
   list-style: none;
-  padding: 0 10px;
 }
 
-li {
+input,
+select,
+textarea {
+  font: inherit;
+  border: 1px solid #ccc;
+}
+
+/* -- EOL.Reset -- */
+body {
+  font-family: "Roboto", serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #333;
+}
+
+.apc {
+  width: 100%;
+  max-width: 400px;
+  min-height: 150px;
+  padding: 16px;
+  overflow: auto;
+  background-color: antiquewhite;
+}
+
+.apc__title {
+  padding: 0 0 4px;
+}
+
+.apc__description {
+  font-size: small;
+}
+
+.apc__status {
+  display: flex;
+  justify-content: flex-start;
+  gap: 6px;
+  align-items: center;
+  margin: 16px 0;
+}
+
+.apc__status-toggle-label {
+  font-size: small;
+  font-weight: bold;
+}
+
+.apc__whitelist-title {
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  font-size: x-small;
+}
+
+.apc__whitelist-container {
+  background-color: #f6f1f1;
+  padding: 15px;
+  display: none; /* Hide the whitelist container at startup */
+}
+
+.apc__domain-input-wrapper {
+  display: flex;
+  width: 100%;
+  gap: 6px;
+}
+
+.apc__domain-input {
+  width: 70%;
+}
+
+.apc__domain-input-text {
+  width: 100%;
+  padding: 5px 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: small;
+}
+
+.apc__domain-input--error {
+  font-size: x-small;
+  padding: 1px 10px;
+  background-color: red;
+  color: white;
+  display: none; /* Hide the whitelist container at startup */
+}
+
+.apc__domain-input-button-wrapper {
+  width: 30%;
+}
+
+.apc__domain-input-button {
+  flex: 1;
+  font-size: 11px;
+  text-transform: uppercase;
+  height: 30px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  background-color: #ccc;
+}
+
+.apc__whitelist {
+  padding: 0 10px;
+  font-size: x-small;
+  list-style: none;
+}
+
+.apc__whitelist li {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 5px 0;
+  padding: 1px 0;
 }
 
-.remove-domain {
+.apc__whitelist-domain-delete-icon {
   color: red;
   cursor: pointer;
-  font-size: 14px;
-  padding: 3px;
+  font-size: 12px;
+  font-weight: bold;
 }

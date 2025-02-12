@@ -7,31 +7,37 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+    rel="stylesheet">
 
   <link rel="stylesheet" href="popup.css" />
 </head>
 
 <body>
-  <div class="container">
-    <div id="header">
-      <h2>AutoPurge Cookies</h2>
-      <p>Automatically delete cookies from untrusted sites to protect your privacy and prevent tracking.</p>
+  <div class="apc">
+    <div class="apc__header">
+      <h2 class="apc__title">AutoPurge Cookies</h2>
+      <p class="apc__description">Automatically delete cookies from untrusted sites to protect your privacy and prevent
+        tracking.</p>
     </div>
-    <div id="status">
-      <label for="enabled">Enable AutoPurge</label>
-      <input id="toggle-status" type="checkbox" id="enabled">
+    <div class="apc__status">
+      <input id="status-toggle" class="apc__status-toggle" type="checkbox">
+      <label for="status-toggle" class="apc__status-toggle-label">Enable AutoPurge</label>
     </div>
-    <div id="whitelist-container">
-      <h3>Whitelisted Domains</h3>
-      <div class="whitelist-input">
-        <input type="text" id="domain" placeholder="Eg. example.com" />
-        <button id="add">Add</button>
+    <div id="whitelist-container" class="apc__whitelist-container">
+      <h4 class="apc__whitelist-title">Whitelisted Domains</h4>
+      <div class="apc__domain-input-wrapper">
+        <div class="apc__domain-input">
+          <input id="domain" class="apc__domain-input-text" type="text" autocomplete="off"
+            placeholder="Eg. example.com" />
+          <span id="domain-input-error" class="apc__domain-input--error"></span>
+        </div>
+        <button id="add" class="apc__domain-input-button">Add</button>
       </div>
-      <span id="input-error"></span>
-      <ul id="whitelist"></ul>
+      <ul id="whitelist" class="apc__whitelist"></ul>
     </div>
   </div>
+  
   <script src="popup.js"></script>
 </body>
 
