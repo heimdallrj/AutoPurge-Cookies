@@ -5,14 +5,12 @@ let whitelist = [];
 browser.storage.onChanged.addListener((changes, area) => {
   if (area === 'local' && changes.whitelist) {
     whitelist = changes.whitelist.newValue || [];
-    console.log('Whitelist updated:', whitelist);
   }
 });
 
 // Initial load
 browser.storage.local.get('whitelist').then((result) => {
   whitelist = result.whitelist || [];
-  console.log('Initial whitelist loaded:', whitelist);
 });
 
 function isDomainWhitelisted(domain, whitelist) {
@@ -40,27 +38,14 @@ browser.windows.onRemoved.addListener(async () => {
 
   // Get all cookies
   browser.cookies.getAll({}).then((cookies) => {
-    console.log('Total cookies found:', cookies.length);
-
     cookies.forEach((cookie) => {
       const domain = cookie.domain.startsWith('.')
         ? cookie.domain.slice(1)
         : cookie.domain;
 
       const isWhitelisted = isDomainWhitelisted(domain, whitelist);
-      console.log('Checking cookie:', {
-        domain: domain,
-        isWhitelisted: isWhitelisted,
-        whitelist: whitelist,
-      });
 
       if (!isWhitelisted) {
-        console.log('Removing cookie:', {
-          domain: domain,
-          name: cookie.name,
-          path: cookie.path,
-        });
-
         browser.cookies.remove({
           url: `http${cookie.secure ? 's' : ''}://${cookie.domain}${
             cookie.path

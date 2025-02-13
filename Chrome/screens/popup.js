@@ -1,12 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const domainInputElement = document.getElementById('domain-input');
-  const addButtonElement = document.getElementById('add-domain');
+  const toggleStatusElement = document.getElementById('status-toggle');
   const whitelistContainerElement = document.getElementById(
     'whitelist-container'
   );
+  const inputErrorElement = document.getElementById('domain-input-error');
+  const domainInputElement = document.getElementById('domain');
+  const addButtonElement = document.getElementById('add');
   const whitelistElement = document.getElementById('whitelist');
-  const toggleStatusElement = document.getElementById('toggle-status');
-  const inputErrorElement = document.getElementById('input-error');
 
   const browser = chrome || browser;
 
@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initialize
   async function init() {
     await resetErrors();
-    await updateToggleStatus();
+    await toggleStatus();
     await loadWhitelist();
   }
 
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Update toggle status
-  async function updateToggleStatus() {
+  async function toggleStatus() {
     try {
       const result = await browser.storage.local.get(['autoPurgeEnabled']);
       autoPurgeEnabled = !!result.autoPurgeEnabled;
@@ -38,8 +38,8 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         whitelistContainerElement.style.display = 'none';
       }
-    } catch (error) {
-      console.error('$updateToggleStatus():', error);
+    } catch (err) {
+      console.error(err);
     }
   }
 
@@ -51,8 +51,8 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       browser.storage.local.get(['whitelist'], (result) => {
         const whitelist = result.whitelist || [];
-
         whitelistElement.innerHTML = '';
+
         if (whitelist.length > 0) {
           whitelist.forEach((domain) => {
             const listElement = document.createElement('li');
@@ -60,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const removeBtnElement = document.createElement('span');
 
             domainLabelElement.textContent = domain;
+            removeBtnElement.classList.add('apc__whitelist-domain-delete-icon');
             removeBtnElement.classList.add('remove-domain');
             removeBtnElement.setAttribute('data-domain', domain);
             removeBtnElement.textContent = '✕';
@@ -73,10 +74,21 @@ document.addEventListener('DOMContentLoaded', () => {
           whitelistElement.style.display = 'none';
         }
       });
-    } catch (error) {
-      console.error('$loadWhitelist():', error);
+    } catch (err) {
+      console.error(err);
     }
   }
+
+  // Toggle auto purge status
+  toggleStatusElement.addEventListener('click', async () => {
+    try {
+      await browser.storage.local.set({ autoPurgeEnabled: !autoPurgeEnabled });
+      await resetErrors();
+      await toggleStatus();
+    } catch (err) {
+      console.error(err);
+    }
+  });
 
   // Add new domain
   addButtonElement.addEventListener('click', async () => {
@@ -92,27 +104,23 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!domainRegex.test(domain)) {
           inputErrorElement.innerText = 'Invalid domain name!';
           inputErrorElement.style.display = 'block';
-
-          domainInputElement.value = '';
           return;
         }
 
         const result = await browser.storage.local.get(['whitelist']);
-        const domains = result.whitelist || [];
+        const whitelistToUpdate = result.whitelist || [];
 
-        if (!domains.includes(domain)) {
-          domains.push(domain);
-          await browser.storage.local.set({ whitelist: domains });
-
-          domainInputElement.value = '';
+        if (!whitelistToUpdate.includes(domain)) {
+          whitelistToUpdate.push(domain);
+          await browser.storage.local.set({ whitelist: whitelistToUpdate });
           loadWhitelist();
-
-          whitelistElement.style.display = 'block';
+          domainInputElement.value = '';
         } else {
-          alert('This domain is already in the whitelist!');
+          inputErrorElement.innerText = 'This domain is already in the whitelist!';
+          inputErrorElement.style.display = 'block';
         }
-      } catch (error) {
-        console.error('Error adding domain:', error);
+      } catch (err) {
+        console.error(err);
       }
     }
   });
@@ -124,27 +132,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (e.target.classList.contains('remove-domain')) {
-      const domainToRemove = e.target.dataset.domain;
+      const domain = e.target.dataset.domain;
       try {
         const result = await browser.storage.local.get(['whitelist']);
-        const domains = result.whitelist || [];
-        const updatedDomains = domains.filter((d) => d !== domainToRemove);
-
-        await browser.storage.local.set({ whitelist: updatedDomains });
+        const whitelist = result.whitelist || [];
+        const newWhitelist = whitelist.filter((d) => d !== domain);
+        await browser.storage.local.set({ whitelist: newWhitelist });
         loadWhitelist();
-      } catch (error) {
-        console.error('Error removing domain:', error);
+      } catch (err) {
+        console.error(err);
       }
-    }
-  });
-
-  // Toggle auto purge status
-  toggleStatusElement.addEventListener('click', async () => {
-    try {
-      await browser.storage.local.set({ autoPurgeEnabled: !autoPurgeEnabled });
-      await updateToggleStatus();
-    } catch (error) {
-      console.error('$toggleStatusElement.click():', error);
     }
   });
 
@@ -156,6 +153,5 @@ document.addEventListener('DOMContentLoaded', () => {
     resetErrors();
   });
 
-  // Initialize
   init();
 });

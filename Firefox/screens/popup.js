@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let autoPurgeEnabled;
 
+  // Initialize
   async function init() {
     await resetErrors();
     await toggleStatus();
@@ -34,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
         whitelistContainerElement.style.display = 'none';
       }
     } catch (err) {
-      console.error('$toggleStatus()', err);
+      console.error(err);
     }
   }
 
@@ -48,24 +49,29 @@ document.addEventListener('DOMContentLoaded', () => {
         const whitelist = result.whitelist || [];
         whitelistElement.innerHTML = '';
 
-        whitelist.forEach((domain) => {
-          const listElement = document.createElement('li');
-          const domainLabelElement = document.createElement('span');
-          const removeBtnElement = document.createElement('span');
+        if (whitelist.length > 0) {
+          whitelist.forEach((domain) => {
+            const listElement = document.createElement('li');
+            const domainLabelElement = document.createElement('span');
+            const removeBtnElement = document.createElement('span');
 
-          domainLabelElement.textContent = domain;
-          removeBtnElement.classList.add('apc__whitelist-domain-delete-icon');
-          removeBtnElement.classList.add('remove-domain');
-          removeBtnElement.setAttribute('data-domain', domain);
-          removeBtnElement.textContent = '✕';
+            domainLabelElement.textContent = domain;
+            removeBtnElement.classList.add('apc__whitelist-domain-delete-icon');
+            removeBtnElement.classList.add('remove-domain');
+            removeBtnElement.setAttribute('data-domain', domain);
+            removeBtnElement.textContent = '✕';
 
-          listElement.appendChild(domainLabelElement);
-          listElement.appendChild(removeBtnElement);
-          whitelistElement.appendChild(listElement);
-        });
+            listElement.appendChild(domainLabelElement);
+            listElement.appendChild(removeBtnElement);
+            whitelistElement.appendChild(listElement);
+          });
+          whitelistElement.style.display = 'block';
+        } else {
+          whitelistElement.style.display = 'none';
+        }
       });
-    } catch (error) {
-      console.error('$loadWhitelist():', error);
+    } catch (err) {
+      console.error(err);
     }
   }
 
@@ -76,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
       await resetErrors();
       await toggleStatus();
     } catch (err) {
-      console.error('$toggleStatusElement.click():', err);
+      console.error(err);
     }
   });
 
@@ -86,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const domain = domainInputElement.value.trim();
+    const domain = domainInputElement.value.trim().toLowerCase();
 
     if (domain) {
       try {
@@ -94,22 +100,24 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!domainRegex.test(domain)) {
           inputErrorElement.innerText = 'Invalid domain name!';
           inputErrorElement.style.display = 'block';
-
-          domainInputElement.value = '';
           return;
         }
 
         browser.storage.local.get('whitelist').then((result) => {
-          const whitelist = result.whitelist || [];
-          if (!whitelist.includes(domain)) {
-            whitelist.push(domain);
-            browser.storage.local.set({ whitelist });
+          const whitelistToUpdate = result.whitelist || [];
+          if (!whitelistToUpdate.includes(domain)) {
+            whitelistToUpdate.push(domain);
+            browser.storage.local.set({ whitelist: whitelistToUpdate });
             loadWhitelist();
             domainInputElement.value = '';
+          } else {
+            inputErrorElement.innerText =
+              'This domain is already in the whitelist!';
+            inputErrorElement.style.display = 'block';
           }
         });
-      } catch (error) {
-        console.error('Error adding domain:', error);
+      } catch (err) {
+        console.error(err);
       }
     }
   });
@@ -129,8 +137,8 @@ document.addEventListener('DOMContentLoaded', () => {
           browser.storage.local.set({ whitelist: newWhitelist });
           loadWhitelist();
         });
-      } catch (error) {
-        console.error('Error removing domain:', error);
+      } catch (err) {
+        console.error(err);
       }
     }
   });
@@ -143,6 +151,5 @@ document.addEventListener('DOMContentLoaded', () => {
     resetErrors();
   });
 
-  // Initialize
   init();
 });
