@@ -130,6 +130,7 @@ body {
   list-style: none;
   overflow-y: scroll;
   max-height: 300px;
+  padding-right: 3px;
 }
 
 .apc__whitelist li {
