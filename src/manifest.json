@@ -1,14 +1,19 @@
 {
-  "manifest_version": 3,
+  "manifest_version": 2,
   "name": "AutoPurge-Cookies",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Automatically delete cookies from untrusted sites to protect your privacy and prevent tracking.",
-  "permissions": ["cookies", "storage", "tabs"],
-  "host_permissions": ["<all_urls>"],
+  "permissions": [
+    "cookies",
+    "storage",
+    "<all_urls>"
+  ],
   "background": {
-    "service_worker": "background.js"
+    "scripts": [
+      "background.js"
+    ]
   },
-  "action": {
+  "browser_action": {
     "default_popup": "screens/popup.html",
     "default_icon": {
       "16": "assets/icon16.png",
@@ -24,5 +29,11 @@
     "48": "assets/icon48.png",
     "96": "assets/icon96.png",
     "128": "assets/icon128.png"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "autopurge-cookies@heimdallr.j",
+      "strict_min_version": "58.0"
+    }
   }
 }

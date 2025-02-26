@@ -1,21 +1,38 @@
+const browser = window.browser || window.chrome;
+const storage = browser.storage.sync || browser.storage;
+
+async function detectBrowser() {
+  if (browser.runtime.detectBrowserInfo) {
+    return "firefox";
+  }
+  return "chrome";
+}
+
 // Store for whitelisted domains
 let whitelist = [];
 
 // Add a storage change listener to keep whitelist updated
-browser.storage.onChanged.addListener((changes, area) => {
+storage.onChanged.addListener((changes, area) => {
   if (area === 'local' && changes.whitelist) {
     whitelist = changes.whitelist.newValue || [];
   }
 });
 
 // Initial load
-browser.storage.local.get('whitelist').then((result) => {
-  whitelist = result.whitelist || [];
-});
+async function init() {
+  const browserName = await detectBrowser();
+
+  let __whitelist__ = "whitelist";
+  if (browserName === "chrome") __whitelist__ = "[whitelist]";
+
+  storage.get(__whitelist__, (result) => {
+    whitelist = result.whitelist || [];
+  });
+}
 
 function isDomainWhitelisted(domain, whitelist) {
-  // Allow FF Addons to stay logged in
-  if (['moz-extension://'].includes(domain)) return true;
+  // Allow browser extensions to stay logged in
+  if (['-extension://'].includes(domain)) return true;
 
   // Remove leading dot if present
   const cleanDomain = domain.startsWith('.') ? domain.slice(1) : domain;
@@ -31,10 +48,8 @@ function isDomainWhitelisted(domain, whitelist) {
 
 // Listen for window close
 browser.windows.onRemoved.addListener(async () => {
-  const result = await browser.storage.local.get(['autoPurgeEnabled']);
-  if (!result.autoPurgeEnabled) {
-    return;
-  }
+  const result = await storage.get(['autoPurgeEnabled']);
+  if (!result.autoPurgeEnabled) return;
 
   // Get all cookies
   browser.cookies.getAll({}).then((cookies) => {
@@ -47,12 +62,13 @@ browser.windows.onRemoved.addListener(async () => {
 
       if (!isWhitelisted) {
         browser.cookies.remove({
-          url: `http${cookie.secure ? 's' : ''}://${cookie.domain}${
-            cookie.path
-          }`,
+          url: `http${cookie.secure ? 's' : ''}://${cookie.domain}${cookie.path
+            }`,
           name: cookie.name,
         });
       }
     });
   });
 });
+
+init();

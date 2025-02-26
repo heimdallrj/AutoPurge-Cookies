@@ -1,3 +1,4 @@
+
 document.addEventListener('DOMContentLoaded', () => {
   const toggleStatusElement = document.getElementById('status-toggle');
   const whitelistContainerElement = document.getElementById(
@@ -8,26 +9,34 @@ document.addEventListener('DOMContentLoaded', () => {
   const addButtonElement = document.getElementById('add');
   const whitelistElement = document.getElementById('whitelist');
 
-  const browser = chrome || browser;
+  const browser = window.browser || window.chrome;
+  const storage = browser.storage.sync || browser.storage;
 
   let autoPurgeEnabled;
 
+  async function detectBrowser() {
+    if (browser.runtime.getBrowserInfo) {
+      return "firefox";
+    }
+    return "chrome";
+  }
+
   // Initialize
   async function init() {
-    await resetErrors();
-    await toggleStatus();
+    await resetUIContainer();
+    await loadUIContainer();
     await loadWhitelist();
   }
 
   // Reset all errors
-  async function resetErrors() {
+  async function resetUIContainer() {
     inputErrorElement.style.display = 'none';
   }
 
   // Update toggle status
-  async function toggleStatus() {
+  async function loadUIContainer() {
     try {
-      const result = await browser.storage.local.get(['autoPurgeEnabled']);
+      const result = await storage.get(['autoPurgeEnabled']);
       autoPurgeEnabled = !!result.autoPurgeEnabled;
 
       toggleStatusElement.textContent = autoPurgeEnabled ? 'Disable' : 'Enable';
@@ -45,12 +54,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Load and display whitelisted domains
   async function loadWhitelist() {
-    if (!autoPurgeEnabled) {
-      return;
-    }
+    if (!autoPurgeEnabled) return;
+
+    const browserName = await detectBrowser();
+
+    let __whitelist__ = "whitelist";
+    if (browserName === "chrome") __whitelist__ = "[whitelist]";
+
     try {
-      browser.storage.local.get(['whitelist'], (result) => {
-        const whitelist = result.whitelist || [];
+      storage.get(__whitelist__, (result) => {
+        const whitelist = (result.whitelist || []).sort();
         whitelistElement.innerHTML = '';
 
         if (whitelist.length > 0) {
@@ -82,19 +95,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // Toggle auto purge status
   toggleStatusElement.addEventListener('click', async () => {
     try {
-      await browser.storage.local.set({ autoPurgeEnabled: !autoPurgeEnabled });
-      await resetErrors();
-      await toggleStatus();
+      storage.set({ autoPurgeEnabled: !autoPurgeEnabled });
+      await resetUIContainer();
+      await loadUIContainer();
     } catch (err) {
       console.error(err);
     }
   });
 
-  // Add new domain
+  // Add domain to whitelist
   addButtonElement.addEventListener('click', async () => {
-    if (!autoPurgeEnabled) {
-      return;
-    }
+    if (!autoPurgeEnabled) return;
 
     const domain = domainInputElement.value.trim().toLowerCase();
 
@@ -107,18 +118,25 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
-        const result = await browser.storage.local.get(['whitelist']);
-        const whitelistToUpdate = result.whitelist || [];
+        const browserName = await detectBrowser();
 
-        if (!whitelistToUpdate.includes(domain)) {
-          whitelistToUpdate.push(domain);
-          await browser.storage.local.set({ whitelist: whitelistToUpdate });
-          loadWhitelist();
-          domainInputElement.value = '';
-        } else {
-          inputErrorElement.innerText = 'This domain is already in the whitelist!';
-          inputErrorElement.style.display = 'block';
-        }
+        let __whitelist__ = "whitelist";
+        if (browserName === "chrome") __whitelist__ = "[whitelist]";
+
+        storage.get(__whitelist__, (result) => {
+          const whitelistToUpdate = result.whitelist || [];
+          if (!whitelistToUpdate.includes(domain)) {
+            whitelistToUpdate.push(domain);
+            whitelistToUpdate.sort();
+            storage.set({ whitelist: whitelistToUpdate });
+            loadWhitelist();
+            domainInputElement.value = '';
+          } else {
+            inputErrorElement.innerText =
+              'This domain is already in the whitelist!';
+            inputErrorElement.style.display = 'block';
+          }
+        })
       } catch (err) {
         console.error(err);
       }
@@ -127,18 +145,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Remove domain from whitelist
   whitelistElement.addEventListener('click', async (e) => {
-    if (!autoPurgeEnabled) {
-      return;
-    }
+    if (!autoPurgeEnabled) return;
+
+    const browserName = await detectBrowser();
+
+    let __whitelist__ = "whitelist";
+    if (browserName === "chrome") __whitelist__ = "[whitelist]";
 
     if (e.target.classList.contains('remove-domain')) {
       const domain = e.target.dataset.domain;
       try {
-        const result = await browser.storage.local.get(['whitelist']);
-        const whitelist = result.whitelist || [];
-        const newWhitelist = whitelist.filter((d) => d !== domain);
-        await browser.storage.local.set({ whitelist: newWhitelist });
-        loadWhitelist();
+        storage.get(__whitelist__, (result) => {
+          const whitelist = result.whitelist || [];
+          const newWhitelist = whitelist.filter((d) => d !== domain);
+          storage.set({ whitelist: newWhitelist });
+          loadWhitelist();
+        });
       } catch (err) {
         console.error(err);
       }
@@ -150,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Enter') {
       addButtonElement.click();
     }
-    resetErrors();
+    resetUIContainer();
   });
 
   init();
