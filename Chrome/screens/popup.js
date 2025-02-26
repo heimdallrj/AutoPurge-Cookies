@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     try {
       browser.storage.local.get(['whitelist'], (result) => {
-        const whitelist = result.whitelist || [];
+        const whitelist = (result.whitelist || []).sort();
         whitelistElement.innerHTML = '';
 
         if (whitelist.length > 0) {
@@ -112,6 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!whitelistToUpdate.includes(domain)) {
           whitelistToUpdate.push(domain);
+          whitelistToUpdate.sort();
           await browser.storage.local.set({ whitelist: whitelistToUpdate });
           loadWhitelist();
           domainInputElement.value = '';
