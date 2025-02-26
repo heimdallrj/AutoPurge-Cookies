@@ -2,10 +2,13 @@ const browser = window.browser || window.chrome;
 const storage = browser.storage.sync || browser.storage;
 
 async function detectBrowser() {
-  if (browser.runtime.detectBrowserInfo) {
+  if (typeof window.browser !== "undefined") {
     return "firefox";
+  } else if (typeof window.chrome !== "undefined") {
+    return "chrome";
+  } else {
+    return "unknown";
   }
-  return "chrome";
 }
 
 // Store for whitelisted domains

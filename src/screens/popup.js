@@ -15,12 +15,15 @@ document.addEventListener('DOMContentLoaded', () => {
   let autoPurgeEnabled;
 
   async function detectBrowser() {
-    if (browser.runtime.getBrowserInfo) {
+    if (typeof window.browser !== "undefined") {
       return "firefox";
+    } else if (typeof window.chrome !== "undefined") {
+      return "chrome";
+    } else {
+      return "unknown";
     }
-    return "chrome";
   }
-
+  
   // Initialize
   async function init() {
     await resetUIContainer();
