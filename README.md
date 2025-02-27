@@ -42,8 +42,8 @@ Not yet available on the Chrome Web Store. Install manually using the source fil
 ## Developer Guide
 
 To start development:
-- Run `npm run build` - This starts the development mode with a file watcher that automatically rebuilds artifacts for all supported browsers in real-time.
-- Find the build artifacts in the `dist/` directory, organized by browser type.
+- Run `npm run start:dev` to start the development mode with a file watcher that automatically rebuilds artifacts for all supported browsers in real-time.
+- You can find the build artifacts in the `dist/` directory, organized by browser type.
 
 When implementing new features or fixing issues, be mindful of *browser differences*. We maintain a unified codebase for both Chrome and Firefox to reduce duplication and ensure easier maintenance.
 
