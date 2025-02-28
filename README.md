@@ -22,8 +22,8 @@ Not yet available on the Chrome Web Store. Install manually using the source fil
 
 ### Adding/Removing Domains from the Whitelist
 - Click on the extension icon in the browser toolbar.
-- In the popup, you’ll see an option to manage your whitelist.
-- To add a domain to the whitelist, simply enter the domain name (e.g., example.com) and click “Add”.
+- In the popup, you'll see an option to manage your whitelist.
+- To add a domain to the whitelist, simply enter the domain name (e.g., example.com) and click "Add".
 - To remove a domain from the whitelist, click the close icon next to the domain name.
 
 ### Purging Cookies
@@ -32,16 +32,18 @@ Not yet available on the Chrome Web Store. Install manually using the source fil
 
 ## Privacy and Security
 - **No Tracking:** Autopurge Cookies does not track or collect any personal information about users.
-- **Local Data Storage:** The extension only stores whitelisted domains locally in your browser’s storage. It does not transmit any data externally.
+- **Local Data Storage:** The extension only stores whitelisted domains locally in your browser's storage. It does not transmit any data externally.
 
 ## Troubleshooting
-- **Cookies Aren’t Purging:** Make sure the extension is enabled, and that no domains you need to whitelist are accidentally included in the list.
-- **Extension Not Working After Update:** Try restarting your browser or reinstalling the extension to ensure it’s working properly.
+- **Cookies Aren't Purging:** Make sure the extension is enabled, and that no domains you need to whitelist are accidentally included in the list.
+- **Extension Not Working After Update:** Try restarting your browser or reinstalling the extension to ensure it's working properly.
 
 
 ## Developer Guide
 
-The build script is only compatible with **UNIX-based environments** (Linux & macOS).
+To start development:
+- Run `npm run start:dev` to start the development mode with a file watcher that automatically rebuilds artifacts for all supported browsers in real-time.
+- You can find the build artifacts in the `dist/` directory, organized by browser type.
 
 When implementing new features or fixing issues, be mindful of *browser differences*. We maintain a unified codebase for both Chrome and Firefox to reduce duplication and ensure easier maintenance.
 
@@ -57,8 +59,8 @@ When implementing new features or fixing issues, be mindful of *browser differen
 - Create a pull request from `dev` to `main`, using the title format as `v{major}.{minor}.{patch}`
 
 **Building & Packaging:**
-- Run the build script locally to generate packaged extensions for both browsers.
-- Artifacts will be available in `dist/`.
+- Run `npm run build` to generate packaged extensions for both browsers.
+- Generate distribution-ready zip files in `dist/`
 
 **Releasing:**
 - [Draft a new release](https://github.com/heimdallrj/AutoPurge-Cookies/releases/new) on GitHub.
