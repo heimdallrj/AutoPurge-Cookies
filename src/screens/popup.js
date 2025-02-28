@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const whitelistElement = document.getElementById('whitelist');
 
   const browser = window.browser || window.chrome;
-  const storage = browser.storage.sync || browser.storage;
+  const storage = browser.storage.local || browser.storage;
 
   let autoPurgeEnabled;
 
@@ -30,6 +30,19 @@ document.addEventListener('DOMContentLoaded', () => {
     await loadWhitelist();
   }
 
+  // Add this new function
+  async function setCurrentTabDomain() {
+    try {
+      const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+      if (tabs[0]?.url) {
+        const url = new URL(tabs[0].url);
+        domainInputElement.value = url.hostname;
+      }
+    } catch (err) {
+      console.error('Error getting active tab:', err);
+    }
+  }
+
   // Reset all errors
   async function resetUIContainer() {
     inputErrorElement.style.display = 'none';
@@ -46,6 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (autoPurgeEnabled) {
         whitelistContainerElement.style.display = 'block';
+        setCurrentTabDomain();
       } else {
         whitelistContainerElement.style.display = 'none';
       }

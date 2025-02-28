@@ -1,5 +1,4 @@
 {
-  "type": "module",
   "scripts": {
     "start:dev": "cross-env NODE_ENV=development node scripts/build.js",
     "build": "NODE_ENV=production node scripts/build.js",

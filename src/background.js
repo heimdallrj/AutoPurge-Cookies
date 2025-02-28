@@ -1,5 +1,5 @@
 const browser = window.browser || window.chrome;
-const storage = browser.storage.sync || browser.storage;
+const storage = browser.storage.local || browser.storage;
 
 async function detectBrowser() {
   if (typeof window.browser !== "undefined") {
@@ -29,6 +29,7 @@ async function init() {
   if (browserName === "chrome") __whitelist__ = "[whitelist]";
 
   storage.get(__whitelist__, (result) => {
+    if (!result) return;
     whitelist = result.whitelist || [];
   });
 }
