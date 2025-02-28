@@ -70,8 +70,8 @@ When implementing new features or fixing issues, be mindful of *browser differen
 - Publish the release.
 
 **Publishing to Browser Stores:**
-- Firefox Add-ons: Submit the build artifact to the Firefox Extension Library.
-- Chrome Web Store: Not yet published, but planned for future releases.
+- **Firefox Add-ons:** Submit the build artifact to the Firefox Extension Library.
+- **Chrome Web Store:** Not yet published, but planned for future releases.
 
 ## Contributing
 

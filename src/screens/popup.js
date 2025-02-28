@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', () => {
   const toggleStatusElement = document.getElementById('status-toggle');
   const whitelistContainerElement = document.getElementById(
@@ -110,39 +109,51 @@ document.addEventListener('DOMContentLoaded', () => {
   addButtonElement.addEventListener('click', async () => {
     if (!autoPurgeEnabled) return;
 
-    const domain = domainInputElement.value.trim().toLowerCase();
+    const input = domainInputElement.value.trim().toLowerCase();
+    if (!input) return;
 
-    if (domain) {
-      try {
-        const domainRegex = /^(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
-        if (!domainRegex.test(domain)) {
-          inputErrorElement.innerText = 'Invalid domain name!';
+    try {
+      const domains = input.includes(',') 
+        ? input.split(',').map(d => d.trim()).filter(d => d)
+        : [input];
+
+      // Domain validation
+      const domainRegex = /^(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
+      const invalidDomains = domains.filter(d => !domainRegex.test(d));
+      
+      if (invalidDomains.length > 0) {
+        inputErrorElement.innerText = domains.length > 1
+          ? `Invalid domain names: ${invalidDomains.join(', ')}`
+          : 'Invalid domain name!';
+        inputErrorElement.style.display = 'block';
+        return;
+      }
+
+      const browserName = await detectBrowser();
+      let __whitelist__ = "whitelist";
+      if (browserName === "chrome") __whitelist__ = "[whitelist]";
+
+      storage.get(__whitelist__, (result) => {
+        const whitelistToUpdate = result.whitelist || [];
+        const duplicateDomains = domains.filter(d => whitelistToUpdate.includes(d));
+
+        if (duplicateDomains.length > 0) {
+          inputErrorElement.innerText = domains.length > 1
+            ? `These domains are already in the whitelist: ${duplicateDomains.join(', ')}`
+            : 'This domain is already in the whitelist!';
           inputErrorElement.style.display = 'block';
           return;
         }
 
-        const browserName = await detectBrowser();
-
-        let __whitelist__ = "whitelist";
-        if (browserName === "chrome") __whitelist__ = "[whitelist]";
-
-        storage.get(__whitelist__, (result) => {
-          const whitelistToUpdate = result.whitelist || [];
-          if (!whitelistToUpdate.includes(domain)) {
-            whitelistToUpdate.push(domain);
-            whitelistToUpdate.sort();
-            storage.set({ whitelist: whitelistToUpdate });
-            loadWhitelist();
-            domainInputElement.value = '';
-          } else {
-            inputErrorElement.innerText =
-              'This domain is already in the whitelist!';
-            inputErrorElement.style.display = 'block';
-          }
-        })
-      } catch (err) {
-        console.error(err);
-      }
+        // Add new domains
+        whitelistToUpdate.push(...domains);
+        whitelistToUpdate.sort();
+        storage.set({ whitelist: whitelistToUpdate });
+        loadWhitelist();
+        domainInputElement.value = '';
+      });
+    } catch (err) {
+      console.error(err);
     }
   });
 
