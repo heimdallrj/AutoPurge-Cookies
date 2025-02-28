@@ -30,13 +30,29 @@ document.addEventListener('DOMContentLoaded', () => {
     await loadWhitelist();
   }
 
-  // Add this new function
-  async function setCurrentTabDomain() {
+  function extractHostName(url) {
+    try {
+      const hostname = new URL(url).hostname;
+      const parts = hostname.split('.');
+      if (parts.length >= 3) {
+        return parts.slice(-2).join('.');
+      }
+      return hostname;
+    } catch (err) {
+      console.error("Invalid URL:", err);
+      return "";
+    }
+  }
+
+  async function loadDefaults(whitelist) {
+    // Set hostname by default if not already in the list
     try {
       const tabs = await browser.tabs.query({ active: true, currentWindow: true });
-      if (tabs[0]?.url) {
-        const url = new URL(tabs[0].url);
-        domainInputElement.value = url.hostname;
+      if (tabs.length > 0 && tabs[0]?.url) {
+        const currentHost = extractHostName(tabs[0]?.url);
+        if (!whitelist.includes(currentHost)) {
+          domainInputElement.value = extractHostName(tabs[0]?.url);
+        }
       }
     } catch (err) {
       console.error('Error getting active tab:', err);
@@ -59,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (autoPurgeEnabled) {
         whitelistContainerElement.style.display = 'block';
-        setCurrentTabDomain();
+        domainInputElement.focus();
       } else {
         whitelistContainerElement.style.display = 'none';
       }
@@ -78,9 +94,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (browserName === "chrome") __whitelist__ = "[whitelist]";
 
     try {
-      storage.get(__whitelist__, (result) => {
+      storage.get(__whitelist__, async (result) => {
         const whitelist = (result.whitelist || []).sort();
         whitelistElement.innerHTML = '';
+
+        await loadDefaults(whitelist);
 
         if (whitelist.length > 0) {
           whitelist.forEach((domain) => {

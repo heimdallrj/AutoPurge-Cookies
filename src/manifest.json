@@ -7,6 +7,7 @@
     "cookies",
     "storage",
     "tabs",
+    "activeTab",
     "<all_urls>"
   ],
   "background": {
