@@ -23,7 +23,9 @@ function getManifestJSON(config, browser, isProduction = false) {
     delete manifest.background.service_worker;
   } else if (browser === 'chrome') {
     manifest.manifest_version = 3;
-    manifest.permissions = config.permissions.filter(permission => (permission !== '<all_urls>' || permission !== "activeTab"));
+    manifest.permissions = config.permissions
+      .filter(permission => permission !== "<all_urls>")
+      .filter(permission => permission !== "<activeTab>");
     manifest.host_permissions = ["<all_urls>"];
     manifest.action = config.browser_action;
     delete manifest.browser_action;
