@@ -1,161 +1,112 @@
-const chokidar = require('chokidar');
 const fs = require('fs-extra');
 const path = require('path');
+const chokidar = require('chokidar');
 const AdmZip = require('adm-zip');
 
-const BROWSERS = ['chrome', 'firefox'];
-const SRC_DIR = 'src';
+const isProduction = process.env.NODE_ENV === 'production';
+
+const pkg = require("../package.json");
+
 const DIST_DIR = 'dist';
+const BROWSERS = ['Chrome', 'Firefox'];
+const SRC_DIR = 'src';
 
-function getManifestJSON(config, browser, isProduction = false) {
-  // Delete developer settings
-  delete config.browser_specific_settings;
+const excludeFileList = ['__MACOSX', '.DS_Store', 'Thumbs.db'];
 
-  const manifest = { ...config };
-
-  if (isProduction) {
-    manifest.name = "AutoPurge-Cookie";
-  }
-
-  if (browser === 'firefox') {
-    manifest.manifest_version = 2;
-    manifest.permissions = config.permissions.filter(permission => permission !== 'tabs');
-    delete manifest.background.service_worker;
-  } else if (browser === 'chrome') {
-    manifest.manifest_version = 3;
-    manifest.permissions = config.permissions
-      .filter(permission => permission !== "<all_urls>")
-      .filter(permission => permission !== "<activeTab>");
-    manifest.host_permissions = ["<all_urls>"];
-    manifest.action = config.browser_action;
-    delete manifest.browser_action;
-    delete manifest.background.scripts;
-  }
-
-  return manifest;
+const getDistName = (browser) => {
+  return `${pkg.namespace}_${browser.toLowerCase()}_${pkg.version}`;
 }
 
-function shouldIgnorePath(filePath) {
-  const ignoredFiles = ['.DS_Store', 'Thumbs.db'];
-  const ignoredDirs = ['__MACOSX'];
+const getFileConfig = (filePath) => {
+  const targetBrowser = BROWSERS.find(browser => filePath.includes(`/${browser}/`)) || 'Unknown';
+  const relativeFilePath = path.relative(path.join(SRC_DIR, targetBrowser), filePath);
+  const destBrowserDir = path.join(DIST_DIR, getDistName(targetBrowser));
+  const destFilePath = path.join(destBrowserDir, relativeFilePath);
 
-  // Check if the file/directory name is in the ignored list
-  const fileName = path.basename(filePath);
-  if (ignoredFiles.includes(fileName)) return true;
-
-  // Check if any parent directory is in the ignored directories list
-  const pathParts = filePath.split(path.sep);
-  return pathParts.some(part => ignoredDirs.includes(part));
+  return { targetBrowser, relativeFilePath, destBrowserDir, srcFilePath: filePath, destFilePath }
 }
 
-function getOutputDir(browser, version) {
-  return path.join(DIST_DIR, `AutoPurge-Cookies_${browser}_${version}`);
-}
-
-// Copy a file to all browser directories
-async function copyFile(filePath) {
-  if (shouldIgnorePath(filePath)) {
-    console.log(`Skipping ignored file/directory: ${filePath}`);
-    return;
-  }
-
-  // First read the manifest to get the version
-  const configPath = path.join(SRC_DIR, 'manifest.json');
-  const config = JSON.parse(await fs.readFile(configPath, 'utf8'));
-  const version = config.version;
-
-  const relativePath = path.relative(SRC_DIR, filePath);
-
-  for (const browser of BROWSERS) {
-    const browserDir = getOutputDir(browser, version);
-    const destPath = path.join(browserDir, relativePath);
-
-    // Handle manifest.json specially
-    if (path.basename(filePath) === 'manifest.json') {
-      const currentManifest = JSON.parse(await fs.readFile(filePath, 'utf8'));
-      const isProduction = process.env.NODE_ENV === 'production';
-      const modifiedManifest = getManifestJSON(currentManifest, browser, isProduction);
-      await fs.ensureDir(path.dirname(destPath));
-      await fs.writeFile(destPath, JSON.stringify(modifiedManifest, null, 2));
-      console.log(`Modified and copied manifest.json to ${destPath}`);
-    } else {
-      await fs.ensureDir(path.dirname(destPath));
-      await fs.copy(filePath, destPath);
-      console.log(`Copied ${relativePath} to ${browser}`);
-    }
-  }
-}
-
-// Remove a file from all browser directories
-async function removeFile(filePath) {
-  const configPath = path.join(SRC_DIR, 'manifest.json');
-  const config = JSON.parse(await fs.readFile(configPath, 'utf8'));
-  const version = config.version;
-
-  const relativePath = path.relative(SRC_DIR, filePath);
-
-  for (const browser of BROWSERS) {
-    const browserDir = getOutputDir(browser, version);
-    const destPath = path.join(browserDir, relativePath);
-    await fs.remove(destPath);
-    console.log(`Removed ${relativePath} from ${browser}`);
-  }
-}
-
-async function zipBrowserBuilds(version) {
+async function pack() {
   for (const browser of BROWSERS) {
     const zip = new AdmZip();
-    const browserDir = getOutputDir(browser, version);
 
-    // Read all files in the browser directory
-    const files = await fs.readdir(browserDir, { recursive: true });
+    const targetBrowserDir = path.join(DIST_DIR, getDistName(browser));
+    const files = await fs.readdir(targetBrowserDir, { recursive: true });
 
     for (const file of files) {
-      const filePath = path.join(browserDir, file);
+      const filePath = path.join(targetBrowserDir, file);
       const stats = await fs.stat(filePath);
 
       if (stats.isFile()) {
-        // Calculate relative path to maintain directory structure
-        const relativePath = path.relative(browserDir, filePath);
+        const relativeFilePath = path.relative(targetBrowserDir, filePath);
         const fileContent = await fs.readFile(filePath);
-        zip.addFile(relativePath, fileContent);
+        zip.addFile(relativeFilePath, fileContent);
       }
     }
 
-    const zipPath = path.join(DIST_DIR, `AutoPurge-Cookie_${browser}_${version}.zip`);
-    zip.writeZip(zipPath);
-    console.log(`Created ${zipPath}`);
+    const distFilePath = path.join(DIST_DIR, `${getDistName(browser)}.zip`);
+    zip.writeZip(distFilePath);
+    console.log(`Created ${distFilePath}`);
   }
 }
 
-// Modify the initialBuild function
-async function initialBuild(isProduction = false) {
+async function build() {
   try {
     // Clean dist directory
     await fs.emptyDir(DIST_DIR);
 
-    // Get version from manifest
-    const configPath = path.join(SRC_DIR, 'manifest.json');
-    const config = JSON.parse(await fs.readFile(configPath, 'utf8'));
-    const version = config.version;
+    const files = (await fs.readdir(SRC_DIR, { recursive: true }))
+      .filter(file => !excludeFileList.some(excluded => file.includes(excluded)));
 
-    // Copy all files from src
-    const files = await fs.readdir(SRC_DIR, { recursive: true });
     for (const file of files) {
-      const filePath = path.join(SRC_DIR, file);
-      if ((await fs.stat(filePath)).isFile()) {
-        await copyFile(filePath);
+      const srcFilePath = path.join(SRC_DIR, file);
+      if ((await fs.stat(srcFilePath)).isFile()) {
+        await copyFile(srcFilePath);
       }
     }
+
     console.log('Initial build completed');
 
-    // Create zip files if in production mode
     if (isProduction) {
-      await zipBrowserBuilds(version);
+      await pack();
     }
+
+    // Pack for distribution
   } catch (error) {
     console.error('Build error:', error);
   }
+}
+
+async function copyFile(srcFilePath) {
+  const { targetBrowser, relativeFilePath, destFilePath } = getFileConfig(srcFilePath);
+
+  if (path.basename(srcFilePath) === 'manifest.json') {
+    const manifestJSON = JSON.parse(await fs.readFile(srcFilePath, 'utf8'));
+
+    manifestJSON.version = pkg.version;
+    if (isProduction) {
+      manifestJSON.name = pkg.namespace;
+    }
+
+    await fs.writeFile(destFilePath, JSON.stringify(manifestJSON, null, 2));
+
+    console.log(`Modified and copied manifest.json to ${destFilePath}`);
+
+    return;
+  }
+
+  await fs.ensureDir(path.dirname(destFilePath));
+  await fs.copy(srcFilePath, destFilePath);
+
+  console.log(`Copied ${relativeFilePath} to ${targetBrowser}`);
+}
+
+async function removeFile(srcFilePath) {
+  const { targetBrowser, relativeFilePath, destFilePath } = getFileConfig(srcFilePath);
+
+  await fs.remove(destFilePath);
+
+  console.log(`Removed ${relativeFilePath} from ${targetBrowser}`);
 }
 
 // Watch for changes
@@ -165,7 +116,7 @@ function watchFiles() {
       /(^|[\/\\])\../, // ignore dotfiles
       '**/.__MACOSX/**',
       '**/.DS_Store',
-      '**/Thumbs.db'
+      '**/Thumbs.db',
     ],
     persistent: true
   });
@@ -179,10 +130,8 @@ function watchFiles() {
   console.log('Watching for changes...');
 }
 
-// Modify the run function
 async function run() {
-  const isProduction = process.env.NODE_ENV === 'production';
-  await initialBuild(isProduction);
+  await build();
 
   // Only watch for changes in development mode
   if (!isProduction) {
