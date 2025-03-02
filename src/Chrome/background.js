@@ -1,21 +1,12 @@
-const browser = window.browser || window.chrome;
-const storage = browser.storage.sync || browser.storage;
-
-async function detectBrowser() {
-  if (typeof window.browser !== "undefined") {
-    return "firefox";
-  } else if (typeof window.chrome !== "undefined") {
-    return "chrome";
-  } else {
-    return "unknown";
-  }
-}
+const __browser__ = chrome;
+const __storage__ = __browser__.storage.local;
 
 // Store for whitelisted domains
 let whitelist = [];
 
 // Add a storage change listener to keep whitelist updated
-storage.onChanged.addListener((changes, area) => {
+// @NOTE Should revisit this logic to determine if it is necessary.
+__storage__.onChanged.addListener((changes, area) => {
   if (area === 'local' && changes.whitelist) {
     whitelist = changes.whitelist.newValue || [];
   }
@@ -23,12 +14,8 @@ storage.onChanged.addListener((changes, area) => {
 
 // Initial load
 async function init() {
-  const browserName = await detectBrowser();
-
-  let __whitelist__ = "whitelist";
-  if (browserName === "chrome") __whitelist__ = "[whitelist]";
-
-  storage.get(__whitelist__, (result) => {
+  __storage__.get("whitelist", (result) => {
+    if (!result) return;
     whitelist = result.whitelist || [];
   });
 }
@@ -41,21 +28,25 @@ function isDomainWhitelisted(domain, whitelist) {
   const cleanDomain = domain.startsWith('.') ? domain.slice(1) : domain;
 
   return whitelist.some((whitelistedDomain) => {
-    // Exact match
-    if (cleanDomain === whitelistedDomain) return true;
+    if (cleanDomain === whitelistedDomain) return true; // Exact match
+
     // Subdomain match (ensure it ends with .whitelistedDomain)
     if (cleanDomain.endsWith('.' + whitelistedDomain)) return true;
     return false;
   });
 }
 
+__browser__.tabs.onRemoved.addListener((() => {
+  // @TODO: #17 Should clear cookies on tab is close unless otherwise specifed
+}));
+
 // Listen for window close
-browser.windows.onRemoved.addListener(async () => {
-  const result = await storage.get(['autoPurgeEnabled']);
-  if (!result.autoPurgeEnabled) return;
+__browser__.windows.onRemoved.addListener(async () => {
+  const result = await __storage__.get(['isEnabledAutoPurge']);
+  if (!result.isEnabledAutoPurge) return;
 
   // Get all cookies
-  browser.cookies.getAll({}).then((cookies) => {
+  __browser__.cookies.getAll({}).then((cookies) => {
     cookies.forEach((cookie) => {
       const domain = cookie.domain.startsWith('.')
         ? cookie.domain.slice(1)
@@ -64,7 +55,7 @@ browser.windows.onRemoved.addListener(async () => {
       const isWhitelisted = isDomainWhitelisted(domain, whitelist);
 
       if (!isWhitelisted) {
-        browser.cookies.remove({
+        __browser__.cookies.remove({
           url: `http${cookie.secure ? 's' : ''}://${cookie.domain}${cookie.path
             }`,
           name: cookie.name,
